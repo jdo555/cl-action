@@ -1,7 +1,12 @@
+;;;; note that the following basic parameters are based on Windows-specified values as derived from the following documentation:
+;;;; https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-mouseinput
+;;;; https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-keybdinput
+;;;; https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
+
 (defpackage #:cl-action/wvk
   (:use #:common-lisp)
-  (:export #:+md-xbutton1
-           #:+md-xbutton2
+  (:export #:+md-xbutton1+
+           #:+md-xbutton2+
            #:+me-move+
            #:+me-leftdown+
            #:+me-leftup+
@@ -180,8 +185,8 @@
            #:*shiftable-character-ht*))
 (in-package #:cl-action/wvk)
 
-(defparameter +md-xbutton1 "Set if the first X button is pressed or released.")
-(defparameter +md-xbutton2 "Set if the second X button is pressed or released.")
+(defparameter +md-xbutton1+ 1 "Set if the first X button is pressed or released.")
+(defparameter +md-xbutton2+ 2 "Set if the second X button is pressed or released.")
 
 (defparameter +me-move+ 1 "Movement occurred.")
 (defparameter +me-leftdown+ 2 "The left button was pressed.")
