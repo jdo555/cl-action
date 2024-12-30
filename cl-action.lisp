@@ -418,8 +418,8 @@
   (let ((wheel-delta 120)) ;; ! this is a Windows-defined-constant
     (mouse-wheel (* movements wheel-delta (if downward -1 1)))))
 
-(defun scroller (scroll-count &key (downward t) (delay-after-each 0) (delay-at-end t))
-  "Causes the mouse wheel to scroll SCROLL-COUNT times, either downwards or upwards, with a delay in seconds of DELAY-AFTER-EACH after each wheel movement. SCROLL-COUNT should be a positive integer, and it refers to a standardized amount of rotation of the wheel, often related directly to the clicking-sound of the physical mouse's wheel during its rotation, and in terms of this library relates directly to the Windows-defined-constant WHEEL_DELTA (120). DOWNWARD is a boolean that, when T, causes downward scrolling; when NIL, causes upward scrolling. DELAY-AFTER-EACH is the delay in seconds between each scroll action. When DELAY-AT-END is T, then the delay will also take place after the final wheel movement; otherwise, there will be no delay at very end."
+(defun scroller (scroll-count &key (downward t) (delay-after-each 0.2) (delay-at-end t))
+  "Causes the mouse wheel to scroll SCROLL-COUNT times, either downwards or upwards, with a delay in seconds of DELAY-AFTER-EACH after each wheel movement. SCROLL-COUNT should be a positive integer, and it refers to a standardized amount of rotation of the wheel, often related directly to the clicking-sound of the physical mouse's wheel during its rotation, and in terms of this library relates directly to the Windows-defined-constant WHEEL_DELTA (120). DOWNWARD is a boolean that, when T, causes downward scrolling; when NIL, causes upward scrolling. DELAY-AFTER-EACH is the delay in seconds between each scroll action; note that this delay, if too short, may prevent the completion of the expected scrolling amount within certain application environments. When DELAY-AT-END is T, then the delay will also take place after the final wheel movement; otherwise, there will be no delay at very end."
   (when (or (not (integerp scroll-count)) (< scroll-count 0)) ;; ! allowing 0 here, since DOTIMES below prevents issues
     (error "SCROLL-COUNT should be a positive integer!"))
   (when (or (not (numberp delay-after-each)) (< delay-after-each 0))
@@ -925,24 +925,18 @@ Finally, keep in mind that delays are important to prevent race conditions; for 
   ;; ... so that as soon as any new period starts, MIN-SECONDS-BETWEEN will have already passed (meaning this function will again be due for an execution)
   (when (and save-time (not (post-execution-or-scheduled-timing ifo)))
     (let ((cur-time (get-internal-time-in-seconds)))
-      ;;(format t "CUR: ~a, LAST: ~a, START: ~a, " (coerce cur-time 'float) (coerce (last-execution-time ifo) 'float) (coerce (start-time ifo) 'float))
       (when (and (zerop (execution-count ifo)) (first-min-seconds-between ifo)) ;; if on first execution and delaying scheduling (by FIRST-MIN-SECONDS-BETWEEN)
         ;; adjusting START-TIME to the beginning of the second period
         (let ((beginning-of-second-period (+ (start-time ifo) (first-min-seconds-between ifo))))
           (setf (slot-value ifo 'start-time) beginning-of-second-period)))
       ;; setting LAST-EXECUTION-TIME to the beginning of the most recent time-period
-      (setf (last-execution-time ifo) (- cur-time (mod (- cur-time (start-time ifo)) (min-seconds-between ifo))))
-      ;;(format t "LAST: ~a, START: ~a~%" (coerce (last-execution-time ifo) 'float) (coerce (start-time ifo) 'float))
-      ))
-  ;;(format t "START: ~a, CUR: ~a, LAST: ~a, " (coerce (start-time ifo) 'float) (coerce (get-internal-time-in-seconds) 'float) (coerce (last-execution-time ifo) 'float))
+      (setf (last-execution-time ifo) (- cur-time (mod (- cur-time (start-time ifo)) (min-seconds-between ifo))))))
   ;; executing the function and keeping track of execution count...
   (funcall (function-or-lambda-expression ifo))
   (incf (execution-count ifo))
   ;; when using post-execution timing, then set the last execution time according to the time after execution
   (when (and save-time (post-execution-or-scheduled-timing ifo))
-    (setf (last-execution-time ifo) (get-internal-time-in-seconds)))
-  ;;(format t "LAST: ~a~%" (coerce (last-execution-time ifo) 'float))
-  )
+    (setf (last-execution-time ifo) (get-internal-time-in-seconds))))
 
 (defmethod run-and-update-intermittent-function-if-time-expired ((ifo intermittent-function) min-time)
   "Causes the passed \"intermittent function\" to execute so long as its time requirement is met; note that this method is only to be used once all other IFO requirements have been met. MIN-TIME is expected to be an integer representing a count of seconds, and should generally be the slot MIN-SECONDS-BETWEEN, or else an alternative such as FIRST-MIN-SECONDS-BETWEEN."
