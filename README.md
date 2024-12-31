@@ -141,18 +141,63 @@ I created a specialized function (USE-KEY-BINDINGS) for enabling a more complex 
 Here is a very simple example:
 
 ```common-lisp
-;; coming soon
+(use-key-bindings +vk-q+ 
+                  (list (cons +vk-r+ #'right-click)
+                        (cons +vk-s+ #'(lambda () (scroller 5 :delay-after-each .3)))
+                        (cons +vk-d+ #'(lambda () (click-and-drag 80 45)))
+                        (cons +vk-a+ #'(lambda ()
+                                         (move-mouse-gradually 30 0 5 0.016)
+                                         (move-mouse-gradually 0 30 5 0.016)
+                                         (move-mouse-gradually -30 0 5 0.016)
+                                         (move-mouse-gradually 0 -30 5 0.016)))))
 ```
+
+Once this code is executed, then execution will be in a waiting state. If the R-key is pressed, a right-click will be immediately triggered. If the S-key is pressed, the mouse wheel will be rotated 5 standard clicks downward. If the D-key is pressed, a click-and-drag action will be done from the cursor's current position, left-click dragging 80 pixels to the right and 45 pixels downward. If the A-key is pressed, then the cursor will move so as to trace a square shape, moving clockwise. If any of the above keys is pressed then execution will immediately return to the waiting state once the associated action is complete. A key-press will only have an effect (in terms of triggering an action) when execution is in the waiting state. Finally, pressing the Q-key will end the function, effectively turning off the bindings.
 
 ### Intermittent Functions
 
 I created a specialized class for handling the timing of arbitrary functions/actions within a single macro. There are two timings: scheduled, where every execution of an arbitrary action will occur at most once within any regular time-period of the specified length; and post-execution, where every execution of an arbitrary action will occur, at soonest, after the expiration of a specified amount of time since the end of its very last execution. In the context of video games, the former is useful for automating actions that reset at very exacting regular intervals (for example, daily rewards that reset at 8:00, 16:00, and 00:00 midnight, every 8 hours); and the latter is to be used where cooldowns are involved (for example, an ability that cannot be used again until 75 seconds have passed).
 
-Here is a very simple example (that does not fit into the gaming context):
+Here is a very simple example (that pretends to be a simplified clicking-game script):
 
 ```common-lisp
-;; coming soon
+(with-intermittent-functions 
+    (ifo (list (make-instance 'intermittent-function :min-seconds-between .05
+                                                     :post-execution-or-scheduled-timing t
+                                                     :trigger-immediate-execution t
+                                                     :function-or-lambda-expression #'(lambda ()
+                                                                                        (print "clicking main-zone...")
+                                                                                        (sleep 3)
+                                                                                        (print "...done clicking")))
+               (make-instance 'intermittent-function :min-seconds-between 6
+                                                     :post-execution-or-scheduled-timing nil
+                                                     :function-or-lambda-expression #'(lambda ()
+                                                                                        (print "leveling-up...")
+                                                                                        (sleep .25)
+                                                                                        (print "...done leveling")))
+               (make-instance 'intermittent-function :min-seconds-between 2.1
+                                                     :first-min-seconds-between 1
+                                                     :post-execution-or-scheduled-timing t
+                                                     :function-or-lambda-expression #'(lambda () 
+                                                                                        (print "activating ability 1")))
+               (make-instance 'intermittent-function :min-seconds-between 7.1
+                                                     :first-min-seconds-between 1
+                                                     :post-execution-or-scheduled-timing t
+                                                     :function-or-lambda-expression #'(lambda () 
+                                                                                        (print "activating ability 2")))
+               (make-instance 'intermittent-function :min-seconds-between 15
+                                                     :post-execution-or-scheduled-timing nil
+                                                     :function-or-lambda-expression #'(lambda () 
+                                                                                        (print "claiming regular 15 second reward")))))
+  (do-until-time-expires 35
+    (run-intermittent-functions ifo)))
 ```
+
+This particular list of Intermittent Function Objects (IFOs) represents a few tasks in a simplified clicking-game; note that each IFO-lambda in this example only "pretends" to do an actual task, and actually only outputs some text to illustrate how timings are handled by this macro; notice also that a call to the SLEEP function within some IFO-lambdas serves to represent an actual run-time.
+
+The first IFO represents the task of clicking the main-clicking zone for 3 seconds (via SLEEP call); it is post-execution with a short delay (.05), and also utilizing immediate execution, because the clicking should be close to non-stop. The second IFO represents clicking a level-up button or buttons for .25 seconds; it is scheduled to occur at least once every 6 seconds. The third IFO represents activating ability 1; it is implied that this ability has a cooldown of 2 seconds, hence the use of post-execution, and there is an initial delay of 1 second before the very first activation. The fourth IFO is just like the third but with a longer cooldown. The fifth IFO represents the claiming of a regular prize or reward that is available once every 15 seconds; this action is scheduled thereby implying that this reward has a regular window of availability that is not delayed by late claiming.
+
+Once this example code is executed there will be live textual output over the course of 35 seconds indicating how these different intermittent functions have been executed. For more details about intermittent functions, please see the relevant documentation within **[cl-action.lisp](./cl-action.lisp)**.
 
 ## Testing and Issues
 
