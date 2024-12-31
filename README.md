@@ -119,7 +119,7 @@ In the following example, tapping the A-key causes the cursor to move briskly to
 ```
 Notice that manual mouse movements during the execution of MOVE-MOUSE-TO-GRADUALLY can prevent the cursor from arriving at the correct destination.
 
-In the following example, tapping the A-key causes virtual keys to be used to triggle the "restore down" functionality of a window, via the pressing of RIGHT-WINDOW-KEY + DOWN-KEY:
+In the following example, tapping the A-key causes virtual keys to be used to trigger the "restore down" functionality of a window, via the pressing of RIGHT-WINDOW-KEY + DOWN-KEY:
 ```common-lisp
 (do-once-after-toggle +vk-a+
   (type-vk-list (list (list +vk-rwin+ +vk-down+))))
@@ -136,22 +136,22 @@ In the following final example, tapping the A-key causes the text "hello" to be 
 
 ### Key-bindings
 
-I created a specialized function (USE-KEY-BINDINGS) for enabling a more complex key-binding system. With this function you can create a waiting state in the Lisp REPL where it is doing nothing but waiting for one of a few assigned keys, where each key ties to a function or arbitrary action and one final distinct key to end the waiting state.
+I created a specialized function (USE-KEY-BINDINGS) for enabling a more complex key-binding system. With this function you can create a waiting state in the Lisp REPL where it is doing nothing but waiting for one of a few assigned keys, where each key ties to a function or arbitrary action, with one final distinct key to be used to end the waiting state.
 
 Here is a very simple example:
 
 ```common-lisp
-
+;; coming soon
 ```
 
 ### Intermittent Functions
 
-I created a specialized class for handling the timing of arbitrary functions/actions within a single macro. There are two timings: scheduled, where every occurance of an arbitrary action will occur at once most within any cyclical time-period of the specified length; and post-execution, where every occurance of an arbitrary action will occur, at soonest, after the expiration of a specified amount of time since the end of its very last execution. In the context of video games, the former is useful for automating actions that reset at very exacting regular intervals (for example, daily rewards that reset at 8:00, 16:00, and 00:00 midnight, every 8 hours); and the latter is to be used where cooldowns are involved (for example, an ability that cannot be used again until 75 seconds pass).
+I created a specialized class for handling the timing of arbitrary functions/actions within a single macro. There are two timings: scheduled, where every execution of an arbitrary action will occur at once most within any regular time-period of the specified length; and post-execution, where every execution of an arbitrary action will occur, at soonest, after the expiration of a specified amount of time since the end of its very last execution. In the context of video games, the former is useful for automating actions that reset at very exacting regular intervals (for example, daily rewards that reset at 8:00, 16:00, and 00:00 midnight, every 8 hours); and the latter is to be used where cooldowns are involved (for example, an ability that cannot be used again until 75 seconds pass).
 
 Here is a very simple example (that does not fit into the gaming context):
 
 ```common-lisp
-
+;; coming soon
 ```
 
 ## Testing and Issues
